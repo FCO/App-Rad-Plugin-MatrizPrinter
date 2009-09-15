@@ -20,8 +20,9 @@ sub write_xls {
 }
    
 sub write_csv {
-   my $c        = shift;
-   my @matriz = ref $_[0] eq "ARRAY" ? @$_[0] : @_;
+   my $c      = shift;
+   my @matriz = @{ shift() };
+   my @cols   = @{ shift() };
    my $filename = $c->stash->{filename};
    open my $FILE, "<", $filename if defined $filename;
    my $sep = $c->stash->{csv_separator} || ";";
@@ -29,16 +30,16 @@ sub write_csv {
    (my $qq2 = $qq) =~ tr/([{<>}])/)]}><{[(/;
    if(not exists $c->stash->{show_title} or $c->stash->{show_title}) {
       if(defined $FILE){
-         print $FILE join($sep, map {qq|$qq$_$qq2|} @{ $c->stash->{colunas} }), $/;
+         print $FILE join($sep, map {s/($qq|$qq2)/\\$1/g; qq|$qq$_$qq2|} @cols), $/;
       } else {
-         print join($sep, map {qq|$qq$_$qq2|} @{ $c->stash->{colunas} }), $/;
+         print join($sep, map {s/($qq|$qq2)/\\$1/g; qq|$qq$_$qq2|} @cols), $/;
       }
    }
    for my $linha (@matriz) {
       if(defined $FILE){
-         print $FILE join($sep, map {qq|$qq$_$qq2|} @$linha), $/;
+         print $FILE join($sep, map {s/($qq|$qq2)/\\$1/g; qq|$qq$_$qq2|} @$linha), $/;
       } else {
-         print join($sep, map {qq|$qq$_$qq2|} @$linha), $/;
+         print join($sep, map {s/($qq|$qq2)/\\$1/g; qq|$qq$_$qq2|} @$linha), $/;
       }
    }
    if(defined $FILE){
